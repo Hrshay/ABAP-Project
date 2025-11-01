@@ -1,0 +1,76 @@
+*&---------------------------------------------------------------------*
+*& Report zrep_bank_vbak_alv
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT zrep_bank_vbak_alv.
+
+PARAMETERS: p_kunnr TYPE kunnr.
+
+TYPES: BEGIN OF ty_result,
+         kunnr        TYPE vbak-kunnr,
+         account_no   TYPE zcaccountno,
+         name         TYPE zcname,
+         bank_name    TYPE zcbnknam,
+         bank_city    TYPE zcbnkct,
+         bank_country TYPE zcbnkcnt,
+         address      TYPE zcaddress,
+         phone_no     TYPE zcphno,
+         email        TYPE zcmailid,
+         branch       TYPE zcbrnch,
+         balance      TYPE zcbln,
+         status       TYPE zcstts,
+         vbeln        TYPE vbeln,
+         erdat        TYPE erdat,
+       END OF ty_result.
+
+DATA: lt_result    TYPE TABLE OF ty_result,
+      lt_fieldcat  TYPE slis_t_fieldcat_alv,
+      lwa_fieldcat TYPE slis_fieldcat_alv.
+
+START-OF-SELECTION.
+
+  SELECT kunnr, account_no, name, bank_name, bank_city, bank_country, address, phone_no, email, branch, balance, status, vbeln, erdat
+  FROM zc_bank_vbak_join( p_kunnr = @p_kunnr )
+  INTO TABLE @lt_result.
+
+
+  IF sy-subrc = 0.
+    PERFORM build_fieldcat.
+
+    CALL FUNCTION 'REUSE_ALV_GRID_DISPLAY'
+      EXPORTING
+        i_callback_program = sy-repid
+        it_fieldcat        = lt_fieldcat
+      TABLES
+        t_outtab           = lt_result.
+  ELSE.
+    WRITE: / 'No Data Found For KUNNR: ', p_kunnr.
+  ENDIF.
+
+FORM build_fieldcat.
+  DEFINE add_field.
+    CLEAR lwa_fieldcat.
+    lwa_fieldcat-fieldname = &1.
+    lwa_fieldcat-seltext_m = &2.
+    lwa_fieldcat-col_pos = &3.
+    lwa_fieldcat-do_sum = &4.
+    APPEND lwa_fieldcat TO lt_fieldcat.
+  END-OF-DEFINITION.
+
+  add_field 'KUNNR' 'vbak-kunnr' 1 ' '.
+  add_field 'ACCOUNT_NO' 'account_no' 2 ' '.
+  add_field 'NAME' 'name' 3 ' '.
+  add_field 'BANK_NAME' 'bank_name' 4 ' '.
+  add_field 'BANK_CITY' 'bank_city' 5 ' '.
+  add_field 'BANK_COUNTRY' 'bank_country' 6 ' '.
+  add_field 'ADDRESS' 'address' 7 ' '.
+  add_field 'PHONE_NO' 'phone_no' 8 ' '.
+  add_field 'EMAIL' 'email' 9 ' '.
+  add_field 'BRANCH' 'branch' 10 ' '.
+  add_field 'BALANCE' 'balance' 11 'X'.
+  add_field 'STATUS' 'status' 12 ' '.
+  add_field 'VBELN' 'vbeln' 13 ' '.
+  add_field 'ERDAT' 'erdat' 14 ' '.
+
+ENDFORM.

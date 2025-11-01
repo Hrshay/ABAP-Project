@@ -1,0 +1,26 @@
+@AbapCatalog.sqlViewName: 'ZSV_BANKJOIN'
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'Bank VBAK Join'
+define view ZC_BANK_VBAK_JOIN
+    with parameters P_KUNNR : kunnr
+as select from zbank_master1_co as BANK
+left outer join vbak
+//inner join vbak
+on BANK.kunnr = vbak.kunnr
+{
+   key BANK.kunnr,
+   key BANK.account_no,
+       BANK.name,
+       BANK.bank_name,
+       BANK.bank_city,
+       BANK.bank_country,
+       BANK.address,
+       BANK.phone_no,
+       BANK.email,
+       BANK.branch,
+       BANK.balance,
+       BANK.status,
+       vbak.vbeln,
+       vbak.erdat
+}
+where BANK.kunnr = :P_KUNNR;
