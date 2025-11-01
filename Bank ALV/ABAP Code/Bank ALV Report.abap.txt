@@ -1,0 +1,513 @@
+*&---------------------------------------------------------------------*
+*& Report ZBANK_ALV
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT zbank_alv.
+
+TABLES: zbank_master1,
+        zbank_history1.
+
+DATA : lv_accno TYPE zcaccountno.
+
+TYPES: BEGIN OF lty_master,
+         account_no   TYPE zcaccountno,
+         name         TYPE zcname,
+         bank_name    TYPE zcbnknam,
+         bank_city    TYPE zcbnkct,
+         bank_country TYPE zcbnkcnt,
+         address      TYPE zcaddress,
+         phone_no     TYPE zcphno,
+         email        TYPE zcmailid,
+         branch       TYPE zcbrnch,
+         balance      TYPE zcbln,
+         status       TYPE zcstts,
+       END OF lty_master.
+
+DATA: lt_master  TYPE TABLE OF zbank_master1,
+      lwa_master TYPE zbank_master1.
+
+TYPES: BEGIN OF lty_history,
+         transaction_id   TYPE zctrnsid,
+         account_no       TYPE zcaccountno,
+         transaction_date TYPE zctrnsdat,
+         transaction_type TYPE zctrnstyp,
+         transaction_time TYPE zctrnstime,
+         credit           TYPE zccrdt,
+         debit            TYPE zcdebt,
+         balance          TYPE zcbln,
+         cmode            TYPE zmode,
+       END OF lty_history.
+
+DATA: lt_history  TYPE TABLE OF zbank_history1,
+      lwa_history TYPE zbank_history1.
+
+DATA: lt_fieldcat   TYPE slis_t_fieldcat_alv,
+      lt_fieldcat1  TYPE slis_t_fieldcat_alv,
+      lwa_fieldcat  TYPE slis_fieldcat_alv,
+      lwa_fieldcat1 TYPE slis_fieldcat_alv.
+
+DATA: lt_sort  TYPE TABLE OF slis_sortinfo_alv,
+      lwa_sort TYPE slis_sortinfo_alv.
+
+*DATA: gv_sort_desc TYPE abap_bool VALUE abap_false.
+*DATA: lt_final  TYPE TABLE OF zstr_bank_alv,
+*      lwa_final TYPE zstr_bank_alv.
+
+SELECT-OPTIONS: s_accno FOR lv_accno.
+
+START-OF-SELECTION.
+  SELECT *
+    INTO CORRESPONDING FIELDS OF TABLE lt_master
+    FROM zbank_master1
+    WHERE account_no IN s_accno.
+
+*  IF lt_master IS NOT INITIAL.
+*    SELECT *
+*      FROM zbank_history1
+*      INTO CORRESPONDING FIELDS OF TABLE lt_history
+*      FOR ALL ENTRIES IN lt_master
+*      WHERE account_no = lt_master-account_no.
+*  ENDIF.
+
+*  LOOP AT lt_master INTO lwa_master.
+*    LOOP AT lt_history INTO lwa_history WHERE account_no = lwa_master-account_no.
+*      lwa_final-account_no = lwa_master-account_no.
+*      lwa_final-name = lwa_master-name.
+*      lwa_final-bank_name = lwa_master-bank_name.
+*      lwa_final-bank_city = lwa_master-bank_city.
+*      lwa_final-bank_country = lwa_master-bank_country.
+*      lwa_final-address = lwa_master-address.
+*      lwa_final-phone_no = lwa_master-phone_no.
+*      lwa_final-email = lwa_master-email.
+*      lwa_final-branch = lwa_master-branch.
+*      lwa_final-balance = lwa_master-balance.
+*      lwa_final-status = lwa_master-status.
+*      lwa_final-transaction_id = lwa_history-transaction_id.
+*      lwa_final-transaction_date = lwa_history-transaction_date.
+*      lwa_final-transaction_type = lwa_history-transaction_type.
+*      lwa_final-transaction_time = lwa_history-transaction_time.
+*      lwa_final-credit = lwa_history-credit.
+*      lwa_final-debit = lwa_history-debit.
+*      lwa_final-balance = lwa_history-balance.
+*      lwa_final-cmode = lwa_history-cmode.
+*      APPEND lwa_final TO lt_final.
+*      CLEAR: lwa_final.
+*    ENDLOOP.
+*  ENDLOOP.
+
+*  CALL FUNCTION 'REUSE_ALV_FIELDCATALOG_MERGE'
+*    EXPORTING
+**     I_PROGRAM_NAME         = I_PROGRAM_NAME
+**     I_INTERNAL_TABNAME     = I_INTERNAL_TABNAME
+*      i_structure_name       = 'ZSTR_BANK_ALV'
+**     I_CLIENT_NEVER_DISPLAY = 'X'
+**     I_INCLNAME             = I_INCLNAME
+**     I_BYPASSING_BUFFER     = I_BYPASSING_BUFFER
+**     I_BUFFER_ACTIVE        = I_BUFFER_ACTIVE
+*    CHANGING
+*      ct_fieldcat            = lt_fieldcat
+*    EXCEPTIONS
+*      inconsistent_interface = 1
+*      program_error          = 2
+*      OTHERS                 = 3.
+*  IF sy-subrc <> 0.
+*  ENDIF.
+*
+  lwa_fieldcat-col_pos = '1'.
+  lwa_fieldcat-fieldname = 'ACCOUNT_NO'.
+  lwa_fieldcat-hotspot = 'X'.
+  lwa_fieldcat-key = 'X'.
+  lwa_fieldcat-seltext_l = 'Account No'.
+  APPEND lwa_fieldcat TO lt_fieldcat.
+  CLEAR : lwa_fieldcat.
+
+  lwa_fieldcat-col_pos = '2'.
+  lwa_fieldcat-fieldname = 'NAME'.
+  lwa_fieldcat-seltext_l = 'Name'.
+  APPEND lwa_fieldcat TO lt_fieldcat.
+  CLEAR : lwa_fieldcat.
+
+  lwa_fieldcat-col_pos = '3'.
+  lwa_fieldcat-fieldname = 'BANK_NAME'.
+  lwa_fieldcat-seltext_l = 'Bank Name'.
+  APPEND lwa_fieldcat TO lt_fieldcat.
+  CLEAR : lwa_fieldcat.
+
+  lwa_fieldcat-col_pos = '4'.
+  lwa_fieldcat-fieldname = 'BANK_CITY'.
+  lwa_fieldcat-seltext_l = 'Bank City'.
+  APPEND lwa_fieldcat TO lt_fieldcat.
+  CLEAR : lwa_fieldcat.
+
+  lwa_fieldcat-col_pos = '5'.
+  lwa_fieldcat-fieldname = 'BANK_COUNTRY'.
+  lwa_fieldcat-seltext_l = 'Bank Country'.
+  APPEND lwa_fieldcat TO lt_fieldcat.
+  CLEAR : lwa_fieldcat.
+
+  lwa_fieldcat-col_pos = '6'.
+  lwa_fieldcat-fieldname = 'ADDRESS'.
+  lwa_fieldcat-seltext_l = 'Address'.
+  APPEND lwa_fieldcat TO lt_fieldcat.
+  CLEAR : lwa_fieldcat.
+
+  lwa_fieldcat-col_pos = '7'.
+  lwa_fieldcat-fieldname = 'PHONE_NO'.
+  lwa_fieldcat-seltext_l = 'Phone Number'.
+  APPEND lwa_fieldcat TO lt_fieldcat.
+  CLEAR : lwa_fieldcat.
+
+  lwa_fieldcat-col_pos = '8'.
+  lwa_fieldcat-fieldname = 'EMAIL'.
+  lwa_fieldcat-seltext_l = 'Email Id'.
+  APPEND lwa_fieldcat TO lt_fieldcat.
+  CLEAR : lwa_fieldcat.
+
+  lwa_fieldcat-col_pos = '9'.
+  lwa_fieldcat-fieldname = 'BRANCH'.
+  lwa_fieldcat-seltext_l = 'Branch'.
+  APPEND lwa_fieldcat TO lt_fieldcat.
+  CLEAR : lwa_fieldcat.
+
+  lwa_fieldcat-col_pos = '10'.
+  lwa_fieldcat-fieldname = 'BALANCE'.
+  lwa_fieldcat-seltext_l = 'Balance'.
+  APPEND lwa_fieldcat TO lt_fieldcat.
+  CLEAR : lwa_fieldcat.
+
+  lwa_fieldcat-col_pos = '11'.
+  lwa_fieldcat-fieldname = 'STATUS'.
+  lwa_fieldcat-seltext_l = 'Status'.
+  APPEND lwa_fieldcat TO lt_fieldcat.
+  CLEAR : lwa_fieldcat.
+
+*
+*  lwa_fieldcat-col_pos = '12'.
+*  lwa_fieldcat-fieldname = 'transaction_id'.
+*  lwa_fieldcat-tabname = 'LT_FINAL'.
+*  lwa_fieldcat-seltext_l = 'Transaction Id'.
+*  APPEND lwa_fieldcat TO lt_fieldcat.
+*  CLEAR : lwa_fieldcat.
+*
+*  lwa_fieldcat-col_pos = '13'.
+*  lwa_fieldcat-fieldname = 'transaction_date'.
+*  lwa_fieldcat-tabname = 'LT_FINAL'.
+*  lwa_fieldcat-seltext_l = 'Transaction Date'.
+*  APPEND lwa_fieldcat TO lt_fieldcat.
+*  CLEAR : lwa_fieldcat.
+*
+*  lwa_fieldcat-col_pos = '14'.
+*  lwa_fieldcat-fieldname = 'transaction_type'.
+*  lwa_fieldcat-tabname = 'LT_FINAL'.
+*  lwa_fieldcat-seltext_l = 'Transaction Type'.
+*  APPEND lwa_fieldcat TO lt_fieldcat.
+*  CLEAR : lwa_fieldcat.
+*
+*  lwa_fieldcat-col_pos = '15'.
+*  lwa_fieldcat-fieldname = 'transaction_time'.
+*  lwa_fieldcat-tabname = 'LT_FINAL'.
+*  lwa_fieldcat-seltext_l = 'Transaction Time'.
+*  APPEND lwa_fieldcat TO lt_fieldcat.
+*  CLEAR : lwa_fieldcat.
+*
+*  lwa_fieldcat-col_pos = '16'.
+*  lwa_fieldcat-fieldname = 'credit'.
+*  lwa_fieldcat-tabname = 'LT_FINAL'.
+*  lwa_fieldcat-seltext_l = 'Credit'.
+*  APPEND lwa_fieldcat TO lt_fieldcat.
+*  CLEAR : lwa_fieldcat.
+*
+*  lwa_fieldcat-col_pos = '17'.
+*  lwa_fieldcat-fieldname = 'debit'.
+*  lwa_fieldcat-tabname = 'LT_FINAL'.
+*  lwa_fieldcat-seltext_l = 'Debit'.
+*  APPEND lwa_fieldcat TO lt_fieldcat.
+*  CLEAR : lwa_fieldcat.
+*
+*  lwa_fieldcat-col_pos = '18'.
+*  lwa_fieldcat-fieldname = 'balance'.
+*  lwa_fieldcat-tabname = 'LT_FINAL'.
+*  lwa_fieldcat-seltext_l = 'Balance'.
+*  APPEND lwa_fieldcat TO lt_fieldcat.
+*  CLEAR : lwa_fieldcat.
+*
+*  lwa_fieldcat-col_pos = '19'.
+*  lwa_fieldcat-fieldname = 'cmode'.
+*  lwa_fieldcat-tabname = 'LT_FINAL'.
+*  lwa_fieldcat-seltext_l = 'Mode'.
+*  APPEND lwa_fieldcat TO lt_fieldcat.
+*  CLEAR : lwa_fieldcat.
+
+*  CALL FUNCTION 'REUSE_ALV_LIST_DISPLAY'
+*    EXPORTING
+**     I_INTERFACE_CHECK              = ' '
+**     I_BYPASSING_BUFFER             = I_BYPASSING_BUFFER
+**     I_BUFFER_ACTIVE                = ' '
+**     I_CALLBACK_PROGRAM             = ' '
+**     I_CALLBACK_PF_STATUS_SET       = ' '
+**     I_CALLBACK_USER_COMMAND        = ' '
+**     I_STRUCTURE_NAME               = I_STRUCTURE_NAME
+**     IS_LAYOUT     = IS_LAYOUT
+*      it_fieldcat   = lt_fieldcat
+**     IT_EXCLUDING  = IT_EXCLUDING
+**     IT_SPECIAL_GROUPS              = IT_SPECIAL_GROUPS
+**     IT_SORT       = IT_SORT
+**     IT_FILTER     = IT_FILTER
+**     IS_SEL_HIDE   = IS_SEL_HIDE
+**     I_DEFAULT     = 'X'
+**     I_SAVE        = ' '
+**     IS_VARIANT    = IS_VARIANT
+**     IT_EVENTS     = IT_EVENTS
+**     IT_EVENT_EXIT = IT_EVENT_EXIT
+**     IS_PRINT      = IS_PRINT
+**     IS_REPREP_ID  = IS_REPREP_ID
+**     I_SCREEN_START_COLUMN          = 0
+**     I_SCREEN_START_LINE            = 0
+**     I_SCREEN_END_COLUMN            = 0
+**     I_SCREEN_END_LINE              = 0
+**     IR_SALV_LIST_ADAPTER           = IR_SALV_LIST_ADAPTER
+**     IT_EXCEPT_QINFO                = IT_EXCEPT_QINFO
+**     I_SUPPRESS_EMPTY_DATA          = ABAP_FALSE
+**   IMPORTING
+**     E_EXIT_CAUSED_BY_CALLER        = E_EXIT_CAUSED_BY_CALLER
+**     ES_EXIT_CAUSED_BY_USER         = ES_EXIT_CAUSED_BY_USER
+*    TABLES
+*      t_outtab      = lt_final
+*    EXCEPTIONS
+*      program_error = 1
+*      OTHERS        = 2.
+*  IF sy-subrc <> 0.
+*  ENDIF.
+
+*  lwa_sort-fieldname = 'ACCOUNT_NO'.
+*  lwa_sort-up = 'X'.
+*  APPEND lwa_sort TO lt_sort.
+*  CLEAR lwa_sort.
+
+  lwa_sort-fieldname = 'ACCOUNT_NO'.
+  lwa_sort-down = 'X'.
+  APPEND lwa_sort TO lt_sort.
+  CLEAR lwa_sort.
+
+  CALL FUNCTION 'REUSE_ALV_GRID_DISPLAY'
+    EXPORTING
+*     I_INTERFACE_CHECK       = ' '
+*     I_BYPASSING_BUFFER      = ' '
+*     I_BUFFER_ACTIVE         = ' '
+      i_callback_program      = sy-repid
+*     I_CALLBACK_PF_STATUS_SET          = ' '
+      i_callback_user_command = 'USER_COMMAND'
+*     I_CALLBACK_TOP_OF_PAGE  = ' '
+*     I_CALLBACK_HTML_TOP_OF_PAGE       = ' '
+*     I_CALLBACK_HTML_END_OF_LIST       = ' '
+*     I_STRUCTURE_NAME        = 'ZSTR_BANK_ALV'
+*     I_BACKGROUND_ID         = ' '
+*     I_GRID_TITLE            = I_GRID_TITLE
+*     I_GRID_SETTINGS         = I_GRID_SETTINGS
+*     IS_LAYOUT               = IS_LAYOUT
+      it_fieldcat             = lt_fieldcat
+*     IT_EXCLUDING            = IT_EXCLUDING
+*     IT_SPECIAL_GROUPS       = IT_SPECIAL_GROUPS
+      it_sort                 = lt_sort
+*     IT_FILTER               = IT_FILTER
+*     IS_SEL_HIDE             = IS_SEL_HIDE
+*     I_DEFAULT               = 'X'
+*     I_SAVE                  = ' '
+*     IS_VARIANT              = IS_VARIANT
+*     IT_EVENTS               = IT_EVENTS
+*     IT_EVENT_EXIT           = IT_EVENT_EXIT
+*     IS_PRINT                = IS_PRINT
+*     IS_REPREP_ID            = IS_REPREP_ID
+*     I_SCREEN_START_COLUMN   = 0
+*     I_SCREEN_START_LINE     = 0
+*     I_SCREEN_END_COLUMN     = 0
+*     I_SCREEN_END_LINE       = 0
+*     I_HTML_HEIGHT_TOP       = 0
+*     I_HTML_HEIGHT_END       = 0
+*     IT_ALV_GRAPHICS         = IT_ALV_GRAPHICS
+*     IT_HYPERLINK            = IT_HYPERLINK
+*     IT_ADD_FIELDCAT         = IT_ADD_FIELDCAT
+*     IT_EXCEPT_QINFO         = IT_EXCEPT_QINFO
+*     IR_SALV_FULLSCREEN_ADAPTER        = IR_SALV_FULLSCREEN_ADAPTER
+* IMPORTING
+*     E_EXIT_CAUSED_BY_CALLER = E_EXIT_CAUSED_BY_CALLER
+*     ES_EXIT_CAUSED_BY_USER  = ES_EXIT_CAUSED_BY_USER
+    TABLES
+      t_outtab                = lt_master
+    EXCEPTIONS
+      program_error           = 1
+      OTHERS                  = 2.
+  IF sy-subrc <> 0.
+  ENDIF.
+
+FORM user_command USING r_ucomm LIKE sy-ucomm
+      rs_selfield TYPE slis_selfield.
+
+  DATA: lv_accno  TYPE zcaccountno,
+        lv_answer TYPE c LENGTH 1.
+
+  CHECK r_ucomm = '&IC1'.
+  IF rs_selfield-fieldname = 'ACCOUNT_NO'.
+
+    READ TABLE lt_master INTO lwa_master INDEX rs_selfield-tabindex.
+    IF sy-subrc = 0.
+      lv_accno = lwa_master-account_no.
+
+*      IF gv_sort_desc = abap_true.
+*        SORT lt_master BY account_no DESCENDING.
+*        gv_sort_desc = abap_false.
+*      ELSE.
+*        SORT lt_master BY account_no ASCENDING.
+*        gv_sort_desc = abap_true.
+*      ENDIF.
+
+*DATA PARAMETER TYPE STANDARD TABLE OF SPAR.
+
+      CALL FUNCTION 'POPUP_TO_CONFIRM'
+        EXPORTING
+          titlebar              = 'Delete Confirmation'
+*         DIAGNOSE_OBJECT       = ' '
+          text_question         = |Do you want to delete transactions for the account { lv_accno }?|
+          text_button_1         = 'Yes'
+*         ICON_BUTTON_1         = ' '
+          text_button_2         = 'No'
+*         ICON_BUTTON_2         = ' '
+          default_button        = '2'
+          display_cancel_button = 'X'
+*         USERDEFINED_F1_HELP   = ' '
+*         START_COLUMN          = 25
+*         START_ROW             = 6
+*         POPUP_TYPE            = POPUP_TYPE
+*         IV_QUICKINFO_BUTTON_1 = ' '
+*         IV_QUICKINFO_BUTTON_2 = ' '
+        IMPORTING
+          answer                = lv_answer
+*          TABLES
+*         PARAMETER             = PARAMETER
+        EXCEPTIONS
+          text_not_found        = 1
+          OTHERS                = 2.
+      IF sy-subrc <> 0.
+      ENDIF.
+
+      IF lv_answer = '1' OR lv_answer = 'Y'.
+
+        DELETE FROM zbank_history1 WHERE account_no = lv_accno.
+        IF sy-subrc = 0.
+          MESSAGE |Deleted Transactions for Account { lv_accno }.| TYPE 'S'.
+        ELSE.
+          MESSAGE 'No Transactions found to delete.' TYPE 'I'.
+        ENDIF.
+
+
+      ELSE.
+
+        SELECT * FROM zbank_history1 INTO TABLE lt_history
+      WHERE account_no = lv_accno.
+
+        CLEAR lt_fieldcat1.
+
+        lwa_fieldcat1-col_pos = '1'.
+        lwa_fieldcat1-fieldname = 'TRANSACTION_ID'.
+        lwa_fieldcat1-seltext_l = 'Transaction Id'.
+        APPEND lwa_fieldcat1 TO lt_fieldcat1.
+        CLEAR : lwa_fieldcat1.
+
+        lwa_fieldcat1-col_pos = '2'.
+        lwa_fieldcat1-fieldname = 'TRANSACTION_DATE'.
+        lwa_fieldcat1-seltext_l = 'Transaction Date'.
+        APPEND lwa_fieldcat1 TO lt_fieldcat1.
+        CLEAR : lwa_fieldcat1.
+
+        lwa_fieldcat1-col_pos = '3'.
+        lwa_fieldcat1-fieldname = 'TRANSACTION_TYPE'.
+        lwa_fieldcat1-seltext_l = 'Transaction Type'.
+        APPEND lwa_fieldcat1 TO lt_fieldcat1.
+        CLEAR : lwa_fieldcat1.
+
+        lwa_fieldcat1-col_pos = '4'.
+        lwa_fieldcat1-fieldname = 'TRANSACTION_TIME'.
+        lwa_fieldcat1-seltext_l = 'Transaction Time'.
+        APPEND lwa_fieldcat1 TO lt_fieldcat1.
+        CLEAR : lwa_fieldcat1.
+
+        lwa_fieldcat1-col_pos = '5'.
+        lwa_fieldcat1-fieldname = 'CREDIT'.
+        lwa_fieldcat1-seltext_l = 'Credit'.
+        APPEND lwa_fieldcat1 TO lt_fieldcat1.
+        CLEAR : lwa_fieldcat1.
+
+        lwa_fieldcat1-col_pos = '6'.
+        lwa_fieldcat1-fieldname = 'DEBIT'.
+        lwa_fieldcat1-seltext_l = 'Debit'.
+        APPEND lwa_fieldcat1 TO lt_fieldcat1.
+        CLEAR : lwa_fieldcat1.
+
+        lwa_fieldcat1-col_pos = '7'.
+        lwa_fieldcat1-fieldname = 'BALANCE'.
+        lwa_fieldcat1-seltext_l = 'Balance'.
+        APPEND lwa_fieldcat1 TO lt_fieldcat1.
+        CLEAR : lwa_fieldcat1.
+
+        lwa_fieldcat1-col_pos = '8'.
+        lwa_fieldcat1-fieldname = 'CMODE'.
+        lwa_fieldcat1-seltext_l = 'Mode'.
+        APPEND lwa_fieldcat1 TO lt_fieldcat1.
+        CLEAR : lwa_fieldcat1.
+
+        CALL FUNCTION 'REUSE_ALV_GRID_DISPLAY'
+          EXPORTING
+*           I_INTERFACE_CHECK       = ' '
+*           I_BYPASSING_BUFFER      = ' '
+*           I_BUFFER_ACTIVE         = ' '
+            i_callback_program      = sy-repid
+*           I_CALLBACK_PF_STATUS_SET          = ' '
+            i_callback_user_command = 'USER_COMMAND'
+*           I_CALLBACK_TOP_OF_PAGE  = ' '
+*           I_CALLBACK_HTML_TOP_OF_PAGE       = ' '
+*           I_CALLBACK_HTML_END_OF_LIST       = ' '
+*           I_STRUCTURE_NAME        = 'ZSTR_BANK_ALV'
+*           I_BACKGROUND_ID         = ' '
+*           i_grid_title            = |Transaction History For Account { lv_accno }|
+*           I_GRID_SETTINGS         = I_GRID_SETTINGS
+*           IS_LAYOUT               = IS_LAYOUT
+            it_fieldcat             = lt_fieldcat1
+*           IT_EXCLUDING            = IT_EXCLUDING
+*           IT_SPECIAL_GROUPS       = IT_SPECIAL_GROUPS
+*           it_sort                 = lt_sort
+*           IT_FILTER               = IT_FILTER
+*           IS_SEL_HIDE             = IS_SEL_HIDE
+*           I_DEFAULT               = 'X'
+*           I_SAVE                  = ' '
+*           IS_VARIANT              = IS_VARIANT
+*           IT_EVENTS               = IT_EVENTS
+*           IT_EVENT_EXIT           = IT_EVENT_EXIT
+*           IS_PRINT                = IS_PRINT
+*           IS_REPREP_ID            = IS_REPREP_ID
+*           I_SCREEN_START_COLUMN   = 0
+*           I_SCREEN_START_LINE     = 0
+*           I_SCREEN_END_COLUMN     = 0
+*           I_SCREEN_END_LINE       = 0
+*           I_HTML_HEIGHT_TOP       = 0
+*           I_HTML_HEIGHT_END       = 0
+*           IT_ALV_GRAPHICS         = IT_ALV_GRAPHICS
+*           IT_HYPERLINK            = IT_HYPERLINK
+*           IT_ADD_FIELDCAT         = IT_ADD_FIELDCAT
+*           IT_EXCEPT_QINFO         = IT_EXCEPT_QINFO
+*           IR_SALV_FULLSCREEN_ADAPTER        = IR_SALV_FULLSCREEN_ADAPTER
+*         IMPORTING
+*           E_EXIT_CAUSED_BY_CALLER = E_EXIT_CAUSED_BY_CALLER
+*           ES_EXIT_CAUSED_BY_USER  = ES_EXIT_CAUSED_BY_USER
+          TABLES
+            t_outtab                = lt_history
+          EXCEPTIONS
+            program_error           = 1
+            OTHERS                  = 2.
+
+        IF sy-subrc <> 0.
+        ENDIF.
+      ENDIF.
+    ENDIF.
+  ENDIF.
+ENDFORM.
